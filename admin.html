@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Upload</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Manrope:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+    <h1>UPLOAD FILE</h1>
+
+    <div class="upload-box" id="uploadBox">
+        <p>Click or Drag File Here</p>
+        <input type="file" id="fileInput">
+    </div>
+
+    <input id="fileName" placeholder="Enter file name">
+</div>
+
+<script>
+const cloudName = "dhxgsiiyy";   // ✅ YOUR CLOUD NAME
+const preset = "school_upload";  // ✅ YOUR PRESET NAME
+const backend = "https://filehub-c63o.onrender.com/add-file";
+
+const input = document.getElementById("fileInput");
+const box = document.getElementById("uploadBox");
+
+box.onclick = () => input.click();
+
+input.onchange = () => uploadFile(input.files[0]);
+
+box.ondragover = e => {
+    e.preventDefault();
+    box.classList.add("drag");
+};
+
+box.ondragleave = () => box.classList.remove("drag");
+
+box.ondrop = e => {
+    e.preventDefault();
+    box.classList.remove("drag");
+    uploadFile(e.dataTransfer.files[0]);
+};
+
+function uploadFile(file) {
+    const name = document.getElementById("fileName").value || file.name;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", preset);
+
+    fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        return fetch(backend, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                name,
+                url: data.secure_url,
+                date: new Date().toISOString()
+            })
+        });
+    })
+    .then(() => alert("Uploaded successfully 🚀"))
+    .catch(err => alert("Error: " + err));
+}
+</script>
+
+</body>
+</html>
